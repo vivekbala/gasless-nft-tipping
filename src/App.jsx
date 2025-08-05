@@ -11,7 +11,7 @@ const CONTRACT_ABI = [
   "function getTip(uint256 tokenId) external view returns (address tipper, address creator, uint256 amount, string message, uint256 timestamp, bool exists)"
 ];
 
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Replace with deployed address
+const CONTRACT_ADDRESS = "0x7095525D45aFE9245C98923Fa802D080a4971c17"; // Deployed on Sepolia
 
 function App() {
   const [provider, setProvider] = useState(null);

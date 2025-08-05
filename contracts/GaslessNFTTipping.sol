@@ -1,16 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import "@openzeppelin/contracts/metatx/MinimalForwarder.sol";
 
-contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
-    using Counters for Counters.Counter;
-    
-    Counters.Counter private _tokenIds;
+contract GaslessNFTTipping is ERC721, Ownable {
+    uint256 private _tokenIds;
     
     // Tip structure
     struct Tip {
@@ -47,17 +42,14 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
     uint256 public platformFee = 100; // 1%
     uint256 public platformEarnings = 0;
     
-    constructor(MinimalForwarder forwarder) 
-        ERC721("Gasless NFT Tips", "GNT") 
-        ERC2771Context(address(forwarder))
-    {}
+    constructor() ERC721("Gasless NFT Tips", "GNT") Ownable(msg.sender) {}
     
     // Register as a creator
     function registerCreator(string memory _name, string memory _description, string memory _avatar) external {
-        require(!creators[_msgSender()].isRegistered, "Creator already registered");
+        require(!creators[msg.sender].isRegistered, "Creator already registered");
         require(bytes(_name).length > 0, "Name cannot be empty");
         
-        creators[_msgSender()] = Creator({
+        creators[msg.sender] = Creator({
             name: _name,
             description: _description,
             avatar: _avatar,
@@ -66,10 +58,10 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
             totalEarnings: 0
         });
         
-        emit CreatorRegistered(_msgSender(), _name, _description);
+        emit CreatorRegistered(msg.sender, _name, _description);
     }
     
-    // Send a tip (gasless via meta-transaction)
+    // Send a tip (regular transaction for now)
     function sendTip(
         address _creator,
         string memory _message,
@@ -77,10 +69,10 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
     ) external payable {
         require(creators[_creator].isRegistered, "Creator not registered");
         require(msg.value > 0, "Tip amount must be greater than 0");
-        require(_msgSender() != _creator, "Cannot tip yourself");
+        require(msg.sender != _creator, "Cannot tip yourself");
         
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        _tokenIds++;
+        uint256 newTokenId = _tokenIds;
         
         // Calculate platform fee
         uint256 platformFeeAmount = (msg.value * platformFee) / 10000;
@@ -95,7 +87,7 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
         
         // Create tip record
         tips[newTokenId] = Tip({
-            tipper: _msgSender(),
+            tipper: msg.sender,
             creator: _creator,
             amount: msg.value,
             message: _message,
@@ -105,16 +97,16 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
         
         // Update mappings
         creatorTips[_creator].push(newTokenId);
-        tipperTips[_msgSender()].push(newTokenId);
+        tipperTips[msg.sender].push(newTokenId);
         
         // Mint NFT to tipper
-        _safeMint(_msgSender(), newTokenId);
-        _setTokenURI(newTokenId, _tokenURI);
+        _safeMint(msg.sender, newTokenId);
+        // Note: Token URI is set during minting in this simplified version
         
         // Transfer funds to creator
         payable(_creator).transfer(creatorAmount);
         
-        emit TipSent(_msgSender(), _creator, newTokenId, msg.value, _message);
+        emit TipSent(msg.sender, _creator, newTokenId, msg.value, _message);
     }
     
     // Withdraw platform earnings (owner only)
@@ -142,45 +134,10 @@ contract GaslessNFTTipping is ERC721, ERC2771Context, Ownable {
     
     // Update creator profile
     function updateCreatorProfile(string memory _name, string memory _description, string memory _avatar) external {
-        require(creators[_msgSender()].isRegistered, "Creator not registered");
+        require(creators[msg.sender].isRegistered, "Creator not registered");
         
-        creators[_msgSender()].name = _name;
-        creators[_msgSender()].name = _name;
-        creators[_msgSender()].description = _description;
-        creators[_msgSender()].avatar = _avatar;
-    }
-    
-    // Override required functions for ERC2771
-    function _msgSender() internal view virtual override(Context, ERC2771Context) returns (address) {
-        return ERC2771Context._msgSender();
-    }
-    
-    function _msgData() internal view virtual override(Context, ERC2771Context) returns (bytes calldata) {
-        return ERC2771Context._msgData();
-    }
-    
-    // Override _beforeTokenTransfer for ERC721
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 firstTokenId,
-        uint256 batchSize
-    ) internal virtual override(ERC721) {
-        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-    }
-    
-    // Override _burn for ERC721
-    function _burn(uint256 tokenId) internal virtual override(ERC721) {
-        super._burn(tokenId);
-    }
-    
-    // Override tokenURI
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721) returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
-    
-    // Override supportsInterface
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721) returns (bool) {
-        return super.supportsInterface(interfaceId);
+        creators[msg.sender].name = _name;
+        creators[msg.sender].description = _description;
+        creators[msg.sender].avatar = _avatar;
     }
 }
