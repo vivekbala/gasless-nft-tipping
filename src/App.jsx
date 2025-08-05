@@ -31,9 +31,18 @@ function App() {
 
   // Connect wallet
   const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // Check and switch to Sepolia network
+        await checkNetwork();
+        
+        // Request accounts specifically from MetaMask
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts',
+          params: []
+        });
+        
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         
@@ -50,10 +59,47 @@ function App() {
         
       } catch (error) {
         console.error('Error connecting wallet:', error);
-        alert('Failed to connect wallet');
+        alert('Failed to connect MetaMask');
       }
     } else {
       alert('Please install MetaMask!');
+    }
+  };
+
+  // Check if we're on Sepolia network
+  const checkNetwork = async () => {
+    if (window.ethereum) {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (chainId !== '0xaa36a7') { // Sepolia chainId
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xaa36a7' }], // Sepolia
+          });
+        } catch (switchError) {
+          // If Sepolia is not added, add it
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xaa36a7',
+                  chainName: 'Sepolia Testnet',
+                  nativeCurrency: {
+                    name: 'Sepolia Ether',
+                    symbol: 'SEP',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://sepolia.infura.io/v3/cb04fbee83fe4e4991796308a7c4a8e0'],
+                  blockExplorerUrls: ['https://sepolia.etherscan.io']
+                }]
+              });
+            } catch (addError) {
+              console.error('Error adding Sepolia network:', addError);
+            }
+          }
+        }
+      }
     }
   };
 
