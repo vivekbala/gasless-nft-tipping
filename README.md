@@ -50,6 +50,26 @@ npm run dev
 6. **Open your browser**
 Navigate to `http://localhost:5173`
 
+## 🧪 Testing & Feedback
+
+**Live Demo**: https://vivekbala.github.io/gasless-nft-tipping/
+
+We're actively looking for testers and creators! 
+
+### How to Test:
+1. **Visit the live demo** above
+2. **Connect your MetaMask** (Sepolia network)
+3. **Get test ETH** from [Sepolia Faucet](https://sepoliafaucet.com/)
+4. **Register as a creator** or **send tips**
+
+### Get Involved:
+- **Report bugs**: [Create an issue](https://github.com/vivekbala/gasless-nft-tipping/issues)
+- **Suggest features**: [Start a discussion](https://github.com/vivekbala/gasless-nft-tipping/discussions)
+- **Contribute code**: Submit a pull request
+- **Join the conversation**: Share your feedback!
+
+**Looking for creators to register and testers to try the platform!** 🎨✨
+
 ## 🏗️ Architecture
 
 ### Smart Contracts
