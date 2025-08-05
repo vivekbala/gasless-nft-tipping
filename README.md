@@ -150,7 +150,6 @@ MIT License - see LICENSE file for details
 
 - **Documentation**: [docs.example.com](https://docs.example.com)
 - **Discord**: [@crypto_sage](https://discord.com/users/crypto_sage)
-- **Twitter**: [@gaslesstipping](https://twitter.com/gaslesstipping)
 
 ---
 
