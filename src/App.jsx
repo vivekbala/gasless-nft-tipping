@@ -158,22 +158,7 @@ function App() {
     }
   };
 
-  // Manual MetaMask selection
-  const selectMetaMaskManually = async () => {
-    try {
-      if (window.ethereum?.providers) {
-        const metamaskProvider = window.ethereum.providers.find(p => p.isMetaMask);
-        if (metamaskProvider) {
-          // Set MetaMask as the selected provider
-          window.ethereum = metamaskProvider;
-          console.log('MetaMask manually selected');
-          alert('MetaMask selected! Please try connecting again.');
-        }
-      }
-    } catch (error) {
-      console.error('Error selecting MetaMask:', error);
-    }
-  };
+
 
   // Check if we're on Sepolia network
   const checkNetwork = async () => {
@@ -333,10 +318,7 @@ function App() {
         {!account ? (
           <div className="wallet-buttons">
             <button onClick={connectWallet} className="connect-btn">
-              🔗 Connect Wallet
-            </button>
-            <button onClick={selectMetaMaskManually} className="select-metamask-btn">
-              🦊 Select MetaMask
+              🔗 Connect MetaMask
             </button>
           </div>
         ) : (
